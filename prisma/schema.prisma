@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String         @id
+  email              String         @unique
+  password           String         @default("")
+  name               String
+  avatar             String
+  streak             Int            @default(0)
+  totalExpensesCount Int            @default(0)
+  monthlyLimit       Float          @default(2000.0)
+  createdAt          DateTime       @default(now())
+  daysUsingApp       Int            @default(1)
+  achievements       String         @default("[]")
+  expenses           Expense[]
+  notifications      Notification[]
+  wallets            Wallet[]
+}
+
+model Category {
+  id       String    @id
+  name     String
+  icon     String
+  color    String
+  isCustom Boolean   @default(false)
+  expenses Expense[]
+}
+
+model Wallet {
+  id       String    @id
+  name     String
+  type     String
+  balance  Float
+  color    String
+  userId   String
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Expense {
+  id         String   @id
+  image      String   @db.NVarChar(Max)
+  amount     Float
+  note       String   @default("")
+  categoryId String
+  userId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  location   String?  @default("")
+  tags       String   @default("[]")
+  category   Category @relation(fields: [categoryId], references: [id], onUpdate: NoAction)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id
+  title     String
+  body      String
+  type      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
